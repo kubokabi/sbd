@@ -1,0 +1,121 @@
+TABEL BARANG
+kd_brg char(10) Primary Key
+namabrg char(35)
+harga int(8)
+satuan char(25)
+stok int(10)
+
+TABEL TRANSAKSI
+no_trans char(25) fk
+kd_brg char(10) fk
+jumlah int(10)
+harga int(8)
+total int(10)
+
+TABEL Master_Transasi
+no_trans char(25) pk
+tgl_trans date
+kd_kasir char(10) fk 
+total_bayar (10) 
+
+banu saya, agar total diambil dari harga * jumlah dari tiap-tiap baris. dan juga total bayar nilainya di dapat dari sum(total).
+
+jadi solusinya gimana, apakah total tidak perlu di buat tabel?
+
+TABEL KASIR
+kd_kasir char(10)  pk
+nama char(35)
+alamat char(10)
+jenis_kelamin char(1)
+telepon char(15)
+
+create table master_transaksi (
+no_trans char(25),
+tgl_trans date,
+kd_kasir char(10),
+foreign key (kd_kasir) references kasir(kd_kasir),
+primary key (no_trans));
+
+create table transaksi (
+no_trans char(25),
+kd_brg char(10),
+jumlah int(10),
+harga int(8),
+foreign key (no_trans) references master_transaksi (no_trans),
+foreign key (kd_brg) references barang (kd_brg)
+);
+
+SELECT no_trans,kd_brg, jumlah, harga, jumlah * harga AS total
+FROM TRANSAKSI;
+
+SELECT transaksi.no_trans, tgl_trans, kd_kasir, 
+SUM(jumlah * harga) AS total_bayar
+FROM transaksi  JOIN master_transaksi 
+ON transaksi.no_trans = master_transaksi.no_trans  
+GROUP BY transaksi.no_trans, tgl_trans, kd_kasir;
+
+
+
+
+SELECT 
+    mt.no_trans, 
+    mt.tgl_trans, 
+    mt.kd_kasir, 
+    SUM(t.jumlah * t.harga) AS total_bayar
+FROM 
+    TRANSAKSI t
+JOIN 
+    Master_Transaksi mt ON t.no_trans = mt.no_trans
+GROUP BY 
+    mt.no_trans, mt.tgl_trans, mt.kd_kasir;
+
+SELECT master_transaksi.no_trans,barang.namabrg,transaksi.harga,kasir.namakasir
+
+create table transaksi (
+no_trans char(25),
+kd_brg char(10),
+jumlah int(10),
+harga int(8),
+total int(10) GENERATED ALWAYS AS (jumlah * harga) STORED,
+foreign key (no_trans) references master_transaksi (no_trans),
+foreign key (kd_brg) references barang (kd_brg)
+);
+
+create table master_transaksi (
+no_trans char(25),
+tgl_trans date,
+kd_kasir char(10),
+total_bayar int(10),
+foreign key (kd_kasir) references kasir(kd_kasir),
+primary key (no_trans));
+
+INSERT INTO transaksi VALUES
+('tr-08-08-24-001', 'D001', 4, 50),
+('tr-08-08-24-001', 'D002', 10, 25);
+
+update transaksi
+set total = jumlah * harga
+where no_trans = 'tr-08-08-24-001';
+
+insert into master_transaksi
+(no_trans,tgl_trans,kd_kasir,total_bayar) values
+('tr-08-08-24-001','20240808','M-01',null);
+
+UPDATE master_transaksi
+SET total_bayar = ( SELECT SUM(total) FROM transaksi
+WHERE no_trans = 'tr-08-08-24-001')
+WHERE no_trans = 'tr-08-08-24-001';
+
+MENAMPILKAN record kolom
+no_trans dari tabel master_transaksi
+namabrg dari tabel barang
+tgl_trans dari tabel transaksi
+namakasir dari tabel kasir
+total_bayar dari tabel master_transaksi
+
+SELECT master_transaksi.no_trans, barang.namabrg,
+transaksi.harga, kasir.namakasir, master_transaksi.total_bayar
+FROM barang, master_transaksi, transaksi, kasir
+WHERE barang.kd_brg = transaksi.kd_brg AND
+master_transaksi.no_trans = transaksi.no_trans AND
+master_transaksi.kd_kasir = kasir.kd_kasir;

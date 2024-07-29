@@ -1,0 +1,182 @@
+create table parts (
+kd_parts char(15),
+nm_parts char(35),
+harga int(10),
+stok int(8),
+primary key (kd_parts));
+
+create table kendaraan (
+no_polisi char(10),
+warna char(10),
+merek char(15),
+tahun year(4),
+primary key (no_polisi));
+
+create table mekanik (
+id_mekanik char(8),
+nm_mekanik char(15),
+alamat char(35),
+telp int(10),
+primary key (id_mekanik));
+
+create table faktur_transaksi (
+no_faktur char(10),
+tgl_faktur date,
+no_polisi char(10),
+id_mekanik char(8),
+grand_total int(10),
+foreign key (no_polisi) references kendaraan(no_polisi),
+foreign key (id_mekanik) references mekanik(id_mekanik),
+primary key (no_faktur));
+
+create table transaksi (
+no_faktur char(10),
+kd_parts char(15),
+kuantum int(10),
+harga int(10),
+total_harga int(10),
+foreign key (no_faktur) references faktur_transaksi(no_faktur),
+foreign key (kd_parts) references parts (kd_parts));
+
+create table diskon (
+kd_parts char(15),
+diskon int(10),
+foreign key (kd_parts) references parts(kd_parts));
+
+create table potongan_global (
+kd_potongan int(11),
+potongan int(10),
+primary key (kd_potongan));
+
+create table header (
+kd_perusahaan char(15),
+nm_perusahaan char(20),
+alamat char(35),
+telp char(10));
+
+# BCNF
+create table history_diskon (
+no_faktur char(10),
+kd_parts char(15),
+diskon int(11),
+foreign key (no_faktur) references faktur_transaksi(no_faktur),
+foreign key (kd_parts) references parts (kd_parts)
+);
+
+insert into history_diskon values
+('05103214','20W501000CC',1000),
+('05103214','SERV001',2000);
+
+create table history_potongan (
+no_faktur char(10),
+potongan int(11),
+foreign key (no_faktur) references faktur_transaksi (no_faktur)
+);
+
+insert into history_potongan values 
+('05103214',2000);
+
+#INSERT
+
+insert into PARTS values
+('20W501000CC','Oli Top 1 1000cc',27000,40),
+('SERV001','Engine Tune Up',25000,30);
+
+insert into KENDARAAN values
+('B3117LB','Biru','Supra X','2005');
+
+insert into MEKANIK values
+('DDE','Djoko Dewanto','PEKALONGAN',028197889);
+
+insert into FAKTUR_TRANSAKSI values
+('05103214','2005-10-25','B3117LB','DDE',NULL);
+
+insert into TRANSAKSI values
+('05103214','20W501000CC',2,27000,54000),
+('05103214','SERV001',1,25000,25000);
+
+insert into DISKON values 
+('20W501000CC',1000),
+('SERV001',2000);
+
+insert into POTONGAN_GLOBAL values 
+('1',2000);
+
+insert into HEADER values 
+('HONDA JAYA RAYA','AHASS 06488','Jatimulya - Bekasi Timur','021-82432162');
+
+# UPDATE STOK PART
+UPDATE parts p
+JOIN transaksi t ON p.kd_parts = t.kd_parts
+SET p.stok = p.stok - t.kuantum;
+
+# Mengurangi total harga dikurangi diskon dari masing-masing transaksi
+UPDATE transaksi trans
+JOIN diskon D ON trans.kd_parts = D.kd_parts
+JOIN parts p ON trans.kd_parts = p.kd_parts
+SET trans.total_harga = trans.total_harga - (trans.kuantum * D.diskon);
+
+# update total_harga mengurangi diskon
+UPDATE transaksi t
+JOIN diskon d ON t.kd_parts = d.kd_parts
+SET t.total_harga = t.total_harga - (t.kuantum * d.diskon);
+
+# Update Grand total dengan sum(total_harga) dikurangi potongan__global jika nilainya >= 1
+UPDATE faktur_transaksi ft
+JOIN ( SELECT t.no_faktur, SUM(t.total_harga) AS total_harga
+FROM transaksi t GROUP BY t.no_faktur) AS temp ON ft.no_faktur = temp.no_faktur
+LEFT JOIN potongan_global pg ON ft.no_faktur = pg.no_faktur
+SET ft.grand_total = temp.total_harga - COALESCE(pg.potongan);
+
+UPDATE faktur_transaksi ft
+JOIN (
+    SELECT t.no_faktur, SUM(t.total_harga) AS total_harga
+    FROM transaksi t 
+    GROUP BY t.no_faktur
+) AS temp ON ft.no_faktur = temp.no_faktur
+SET ft.grand_total = temp.total_harga - (SELECT COALESCE(potongan, 0) FROM potongan_global);
+
+
+# OUTPUT AKHIR CETAK STRUK
+SELECT 
+    CONCAT(
+        " \"", h.kd_perusahaan, "\"\n",
+        h.nm_perusahaan, SPACE(75 - CHAR_LENGTH(h.nm_perusahaan)), "No Faktur : ", ft.no_faktur, "\n",
+        h.alamat, SPACE(75 - CHAR_LENGTH(h.alamat)), "Tanggal   : ", DATE_FORMAT(ft.tgl_faktur, '%Y-%m-%d'), "\n",
+        "Telp. ", h.telp, "\n------------------------------------------------------------------------------------------------------\n\n",
+        REPEAT(' ', 45), "BON PEMBELIAN\n",
+        "No Polisi     : ", k.no_polisi, SPACE(60 - CHAR_LENGTH(k.no_polisi)), "Warna  : ", k.warna, "\n",
+        "Merek         : ", k.merek, SPACE(60 - CHAR_LENGTH(k.merek)), "Tahun  : ", k.tahun, "\n",
+        "Mekanik ID    : ", m.id_mekanik, SPACE(60 - CHAR_LENGTH(m.id_mekanik)), "Nama   : ", m.nm_mekanik, "\n
+	------------------------------------------------------------------------------------------------------\n",
+        "     Kode Part       |       Nama Parts     	  | Kuantum |   Harga   | Diskon   | Jumlah\n",
+        GROUP_CONCAT(
+            "     ", tr.kd_parts, SPACE(23 - CHAR_LENGTH(tr.kd_parts)),
+            p.nm_parts, SPACE(23 - CHAR_LENGTH(p.nm_parts)),
+            tr.kuantum, SPACE(9 - CHAR_LENGTH(tr.kuantum)),
+            FORMAT(tr.harga, 0), SPACE(11 - CHAR_LENGTH(FORMAT(tr.harga, 0))),
+            FORMAT(COALESCE(d.diskon, 0), 0), SPACE(10 - CHAR_LENGTH(FORMAT(COALESCE(d.diskon, 0), 0))),
+            FORMAT(tr.total_harga, 0)
+            SEPARATOR '\n'
+        ), "\n",
+        REPEAT('-', 102), "\n",
+       SPACE(80 - CHAR_LENGTH(FORMAT(COALESCE((SELECT potongan FROM potongan_global LIMIT 1), 0), 0)) - 1), 
+        "Potongan : ", FORMAT(COALESCE((SELECT potongan FROM potongan_global         LIMIT 1), 0), 0), "\n",
+        SPACE(80 - CHAR_LENGTH(FORMAT(ft.grand_total, 0)) - 0), "Total    : ", FORMAT(ft.grand_total, 0), "\n"
+    ) AS formatted_output
+FROM 
+    HEADER h
+JOIN 
+    faktur_transaksi ft ON h.kd_perusahaan = h.kd_perusahaan
+JOIN 
+    kendaraan k ON ft.no_polisi = k.no_polisi
+JOIN 
+    mekanik m ON ft.id_mekanik = m.id_mekanik 
+JOIN 
+    transaksi tr ON ft.no_faktur = tr.no_faktur
+LEFT JOIN 
+    parts p ON tr.kd_parts = p.kd_parts
+LEFT JOIN 
+    diskon d ON tr.kd_parts = d.kd_parts
+GROUP BY 
+    ft.no_faktur;

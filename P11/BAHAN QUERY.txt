@@ -1,0 +1,99 @@
+create table mahasiswa_ilkom (
+nim char(9),
+nama char(20),
+umur integer(2),
+tempat_lahir char(15),
+ipk float(3,2));
+
+insert into mahasiswa_ilkom values
+("089045001","ILHAM R",22,"PEKALONGAN",3.99),
+("109245021","SANTI",21,"MALANG",3.20),
+("099145055","DODI SITUMORANG",22,"MEDAN",1.90);
+
+create user 'ilkom_admin'@'localhost' identified by 'r4hasia';
+
+grant select on universitas.mahasiswa_ilkom to 'ilkom_admin'@'localhost';
+
+mysql -u ilkom_admin -pr4hasia
+
+create database apotik; (karena keterbatasan cuma select maka tidak bisa buat database)
+
+show databases;
+
+select * from mahasiswa_ilkom;
+
+select * from mahasiswa_ilkom where umur <= 22;
+
+delete from mahasiswa_ilkom where nama="SANTI";
+
+EXIT
+
+mysql -u root
+
+use universitas
+
+create table mahasiswa_ekonomi (
+nim char(9),
+nama char(20),
+umur integer(2),
+tempat_lahir char(15),
+ipk float(3,2));
+
+show tables;
+
+insert into mahasiswa_ekonomi values
+("109045319","TANTI",21,"DENPASAR",2.30),
+("108545021","TUMIYEM ANRI",23,"DENPASAR",3.53),
+("087645055","TARMIJI",25,"DEPOK",2.26);
+
+create user 'ilham'@'localhost' identified by 'ilham';
+
+grant select, insert on universitas.* to 'ilham'@'localhost';
+
+EXIT
+
+mysql -u ilham -pilham
+
+insert into mahasiswa_ekonomi values
+("999999999","ARIFIN ILHAM",30,"SEMARANG",3.40);
+
+KUIS
+USER : jurusan
+PASSWORD : jurusan_admin
+Database : Universitas
+Tabel : Semua
+Perintah : Insert, update, select, delete
+
+Masuk ke user jurusan, LALU
+
+Tabel mahasiswa_ilkom ( select * from mahasiswa_ilkom);
+
+delete from mahasiswa_ilkom where nama="SANTI";
+
+SELECT * FROM MAHASISWA_ILKOM
+
+UPDATE TABEL MAHASISWA EKONOMI ( update mahasiwa_ekonomi set ipk=3.92 umur=24 where nim="108545021";
+
+JAWABAN
+
+create user 'Jurusan'@'localhost' identified by 'Jurusan_Admin';
+
+grant select, insert, update, delete on universitas.* to 'Jurusan'@'localhost';
+
+EXIT
+
+mysql -u Jurusan -pJurusan_Admin
+
+use universitas
+
+select * from mahasiswa_ilkom
+
+delete from mahasiswa_ilkom where nama="SANTI";
+
+SELECT * FROM MAHASISWA_ILKOM
+
+SELECT * FROM MAHASISWA_EKONOMI;
+
+update mahasiswa_ekonomi set ipk=3.92 where nim="108545021";
+
+update mahasiswa_ekonomi set umur=24 where nim="108545021";

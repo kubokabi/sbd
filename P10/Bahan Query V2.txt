@@ -1,0 +1,81 @@
+insert into kota values
+("K1","PEKALONGAN","JAWA TENGAH"),
+("K2","BATANG","JAWA TENGAH"),
+("K3","JAKARTA","DKI JAKARTA"),
+("K4","BANDUNG","JAWA BARAT");
+
+INSERT INTO BARANG VALUES
+("BR-001","KERAMIK MULIA","KON. 60 FIT",780000000),
+("BR-002","GRANIT","KON. 90 FIT",1200000000);
+
+insert into cust values
+("C001","TOKO KERAMIK SURYA","JL. MERPATI","K1"),
+("C002","TOKO ALAT BANGUNAN","JL. MERAK","K2");
+
+INSERT INTO PEGAWAI VALUES
+("P001","BUDIWALUYO","JL. PENI","K1"),
+("P002","SARI PUSPA","JL. CERMAI","K2");
+
+INSERT INTO SUPPLIER VALUES
+("S001","AHMAT","JL. MERDEKA","K3"),
+("S002","JOKO","JL. CI AMLAS","K4");
+
+INSERT INTO TRANSBELI VALUES
+("NT-B-0001","2019-02-10","S001","BR-002",3600,2,2400000000);
+
+ALTER TABLE TRANSBELI MODIFY hargabeli bigint(13) unsigned;
+
+UPDATE transbeli SET hargabeli=2400000000 where nofaktur="NT-B-0001";
+
+INSERT INTO returbeli VALUES
+("RT-B-0001","NT-B-0001","2019-03-12","BR-002",15,"PECAH");
+
+INSERT INTO transjual VALUES
+("NT-J-0001","2019-04-04","C001","BR-002",1800,1,1200000000,"P002");
+
+INSERT INTO returjual VALUES
+("RT-J-0001","NT-J-0001","2019-04-09","BR-002",4,"KARDUS DAN PECAH","P001");
+
+ALTER TABLE returjual MODIFY ketbrg char(20);
+
+UPDATE returjual SET ketbrg="KARDUS DAN PECAH" WHERE noreturjual="RT-J-0001";
+
+SELECT pegawai.kdpeg, pegawai.nmpeg, kota.namakota
+FROM pegawai, kota WHERE pegawai.kotapeg = kota.kota;
+
+SELECT transbeli.nofaktur, supplier.nmsuppl, barang.nmbrg,
+transbeli.qty, transbeli.jml, transbeli.hargabeli FROM
+transbeli, supplier, barang WHERE transbeli.kdsuppl = supplier.kdsuppl AND
+transbeli.kdbrg = barang.kdbrg;
+
+KUIS
+1 KONTAINER 1200000000
+#MANUAL
+INSERT INTO TRANSBELI VALUES
+("NT-B-0002","2019-02-16","S002","BR-002",500,3,3600000000);
+
+#OTOMATIS
+INSERT INTO transbeli (nofaktur,tglbeli,kdsuppl,kdbrg,qty,jml) VALUES
+("NT-B-0003","2019-02-20","S002","BR-002",500,2);
+
+UPDATE transbeli
+JOIN barang ON transbeli.kdbrg = barang.kdbrg
+SET transbeli.hargabeli = transbeli.jml * barang.harga; 
+
+#KUIS TERAKHIR
+SELECT nofaktur, qty
+FROM QTY_1000
+GROUP BY nofaktur;
+
+ select transbeli.nofaktur, transbeli.tglbeli, supplier.nmsuppl,
+transbeli.kdbrg, transbeli.qty, transbeli.jml, transbeli.hargabeli
+FROM transbeli JOIN supplier ON transbeli.kdsuppl = supplier.kdsuppl;
+
+SELECT transjual.nota, transjual.tglnota,
+cust.nmcust, barang.nmbrg, transjual.qty, transjual.jml, transjual.hargajual
+FROM transjual JOIN cust ON transjual.kdcust = cust.kdcust
+JOIN barang ON transjual.kdbrg = barang.kdbrg;
+
+INSERT INTO transjual VALUES
+("NT-J-0003","2019-04-10","C004","BR-004",500,1,850000000,"P003");
+

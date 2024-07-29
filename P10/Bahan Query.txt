@@ -5,12 +5,15 @@ insert into kota values
 ("K4","BANDUNG","JAWA BARAT");
 
 INSERT INTO BARANG VALUES
-("BR-001","KERAMIK MULIA","KON. 60 FIT",780000000),
+("BR-001","KERAMIK KACA","KON. 60 FIT",780000000);
 ("BR-002","GRANIT","KON. 90 FIT",1200000000);
 
 insert into cust values
 ("C001","TOKO KERAMIK SURYA","JL. MERPATI","K1"),
 ("C002","TOKO ALAT BANGUNAN","JL. MERAK","K2");
+
+insert into cust values
+("C004","TOKO KERAMIK JAYA","JL. INDAH","K5");
 
 INSERT INTO PEGAWAI VALUES
 ("P001","BUDIWALUYO","JL. PENI","K1"),
@@ -22,6 +25,10 @@ INSERT INTO SUPPLIER VALUES
 
 INSERT INTO TRANSBELI VALUES
 ("NT-B-00001","S001","BR-002",3600,2,2400000000);
+
+INSERT INTO TRANSBELI 
+(nofaktur,tglbeli,kdsuppl,kdbrg,qty,jml)
+VALUES ("NT-B-0005","2019-02-29","S003","BR-004",500,7);
 
 ALTER TABLE TRANSBELI MODIFY hargabeli bigint(13) unsigned;
 
@@ -47,3 +54,11 @@ SELECT transbeli.nofaktur, supplier.nmsuppl, barang.nmbrg,
 transbeli.qty, transbeli.jml, transbeli.hargabeli FROM
 transbeli, supplier, barang WHERE transbeli.kdsuppl = supplier.kdsuppl AND
 transbeli.kdbrg = barang.kdbrg;
+
+ INSERT INTO TRANSBELI
+(nofaktur,tglbeli,kdsuppl,kdbrg,qty,jml)
+VALUES ("NT-B-0005","2019-02-25","S003","BR-004",500,7);
+
+update transbeli
+JOIN barang ON transbeli.kdbrg = barang.kdbrg
+SET transbeli.hargabeli = transbeli.jml * barang.harga;

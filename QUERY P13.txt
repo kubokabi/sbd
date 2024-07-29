@@ -1,0 +1,75 @@
+-- Tabel Pelanggan (Penitip)
+CREATE TABLE Pelanggan (
+    no_ktp VARCHAR(20) PRIMARY KEY,
+    nama VARCHAR(100) NOT NULL,
+    alamat TEXT,
+    telp_hp VARCHAR(20)
+);
+
+-- Tabel Petugas Operator
+CREATE TABLE Petugas (
+    no_pegawai VARCHAR(20) PRIMARY KEY,
+    nama VARCHAR(100) NOT NULL,
+    alamat TEXT,
+    no_telp VARCHAR(20)
+);
+
+-- Tabel Harga Titip Perhari
+CREATE TABLE HargaTitipPerhari (
+    kode_kendaraan VARCHAR(20) PRIMARY KEY,
+    jenis_kendaraan VARCHAR(50) NOT NULL,
+    harga_per_hari INT NOT NULL
+);
+
+-- Tabel Transaksi
+CREATE TABLE Transaksi (
+    no_transaksi INT AUTO_INCREMENT PRIMARY KEY,
+    tgl_nitip DATE NOT NULL,
+    tgl_ambil DATE NOT NULL,
+    jumlah_hari INT,
+    kode_kendaraan VARCHAR(20),
+    no_ktp VARCHAR(20),
+    no_kendaraan VARCHAR(50),
+    biaya_titip INT,
+    no_pegawai VARCHAR(20),
+    FOREIGN KEY (kode_kendaraan) REFERENCES HargaTitipPerhari(kode_kendaraan),
+    FOREIGN KEY (no_ktp) REFERENCES Pelanggan(no_ktp),
+    FOREIGN KEY (no_pegawai) REFERENCES Petugas(no_pegawai)
+);
+
+
+insert into petugas values
+('A22','WATI','SEMARANG','6283654654560');
+
+insert into hargatitipperhari values
+('SM02','Sepeda',1000),
+('M020','Sepeda Motor',2000),
+('MB03','Mobil',5000);
+
+insert into pelanggan values
+('6543210987654321','Andi','Batang','6287656453676');
+
+INSERT INTO Transaksi 
+(no_transaksi, tgl_nitip, tgl_ambil, jumlah_hari, kode_kendaraan, 
+no_ktp, no_kendaraan, biaya_titip, no_pegawai) 
+VALUES (01, '2024-07-10', NULL, NULL, 'M020',
+ '6543210987654321', 'A2076', 2000, 'A11');
+
+
+UPDATE Transaksi
+SET tgl_ambil = '2024-07-12',
+    jumlah_hari = DATEDIFF('2024-07-12', '2024-07-10'),
+    biaya_titip = 2000 * DATEDIFF('2024-07-12', '2024-07-10')
+WHERE no_transaksi = 01;
+
+UPDATE Transaksi
+SET tgl_ambil = '2024-07-15',
+    jumlah_hari = DATEDIFF('2024-07-15', '2024-07-13'),
+    biaya_titip = 2000 * DATEDIFF('2024-07-15', '2024-07-13'),
+    kode_penerima_uang = 'A22'
+WHERE no_transaksi = 02;
+
+
+
+
+
